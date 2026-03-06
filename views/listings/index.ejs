@@ -1,0 +1,816 @@
+<!-- <% layout("/layouts/boilerplate.ejs") %>
+
+<% if (success) { %>
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    <%= success %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+<% } %>
+
+<style>
+  #filters {
+    margin-top: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .filter {
+    text-align: center;
+    margin-right: 1rem;
+    margin-bottom: 1rem;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+    cursor: pointer;
+  }
+
+  .filter:hover {
+    opacity: 1;
+  }
+
+  .filter p {
+    font-size: 0.8rem;
+    margin-top: 0.3rem;
+    margin-bottom: 0;
+  }
+
+  .filter i {
+    font-size: 1.4rem;
+  }
+
+  .filter.active {
+    opacity: 1;
+    border-bottom: 2px solid #222;
+  }
+
+  .tax-toggle {
+    margin-left: auto;
+    margin-bottom: 1rem;
+    border: 1px solid black;
+    border-radius: 1rem;
+    padding: 1rem;
+  }
+
+  .listing-card {
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .listing-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  }
+
+  .listing-card img {
+    height: 20rem;
+    object-fit: cover;
+  }
+
+  .tax-info {
+    display: none;
+    color: #555;
+    font-size: 0.85rem;
+  }
+</style>
+
+<div id="filters">
+  <div class="filter" data-filter="trending">
+    <div><i class="fa-solid fa-fire"></i></div>
+    <p>Trending</p>
+  </div>
+  <div class="filter" data-filter="rooms">
+    <div><i class="fa-solid fa-bed"></i></div>
+    <p>Rooms</p>
+  </div>
+  <div class="filter" data-filter="iconic-cities">
+    <div><i class="fa-solid fa-mountain-city"></i></div>
+    <p>Iconic Cities</p>
+  </div>
+  <div class="filter" data-filter="mountains">
+    <div><i class="fa-solid fa-mountain"></i></div>
+    <p>Mountains</p>
+  </div>
+  <div class="filter" data-filter="castles">
+    <div><i class="fa-brands fa-fort-awesome"></i></div>
+    <p>Castles</p>
+  </div>
+  <div class="filter" data-filter="pools">
+    <div><i class="fa-solid fa-person-swimming"></i></div>
+    <p>Amazing Pools</p>
+  </div>
+  <div class="filter" data-filter="camping">
+    <div><i class="fa-solid fa-campground"></i></div>
+    <p>Camping</p>
+  </div>
+  <div class="filter" data-filter="farms">
+    <div><i class="fa-solid fa-cow"></i></div>
+    <p>Farms</p>
+  </div>
+  <div class="filter" data-filter="arctic">
+    <div><i class="fa-regular fa-snowflake"></i></div>
+    <p>Arctic</p>
+  </div>
+
+  <div class="tax-toggle">
+    <div class="form-check form-check-reverse form-switch">
+      <input
+        class="form-check-input"
+        type="checkbox"
+        role="switch"
+        id="switchCheckDefault"
+      />
+      <label class="form-check-label" for="switchCheckDefault">
+        Display total after taxes
+      </label>
+    </div>
+  </div>
+</div>
+
+<div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 g-4">
+  <% for (let listing of allListings) { %>
+    <div class="col">
+      <a href="/listings/<%= listing._id %>" class="listing-link text-decoration-none text-dark">
+        <div class="card listing-card">
+          <img
+            src="<%= listing.image.url %>"
+            class="card-img-top"
+            alt="<%= listing.title %>"
+          />
+          <div class="card-body">
+            <p class="card-text">
+              <b><%= listing.title %></b><br>
+              ₹<%= listing.price.toLocaleString("en-IN") %> / night
+              <i class="tax-info">&nbsp;+18% GST</i>
+            </p>
+          </div>
+        </div>
+      </a>
+    </div>
+  <% } %>
+</div>
+
+<script>
+  const taxSwitch = document.getElementById("switchCheckDefault");
+  taxSwitch.addEventListener("change", () => {
+    const taxInfoElements = document.getElementsByClassName("tax-info");
+    for (const info of taxInfoElements) {
+      info.style.display = taxSwitch.checked ? "inline" : "none";
+    }
+  });
+  const filters = document.querySelectorAll(".filter");
+  filters.forEach(filter => {
+    filter.addEventListener("click", () => {
+      filters.forEach(f => f.classList.remove("active"));
+      filter.classList.toggle("active");
+    });
+  });
+</script> -->
+
+
+<% layout("/layouts/boilerplate.ejs") %>
+
+<% if (success) { %>
+  <div class="flash-toast" id="flashToast">
+    <i class="fa-solid fa-circle-check"></i>
+    <span><%= success %></span>
+    <button onclick="this.parentElement.classList.add('hide')" class="toast-close">&times;</button>
+  </div>
+<% } %>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --cream: #faf7f2;
+    --charcoal: #1a1a1a;
+    --warm: #c8a96e;
+    --warm-light: #f0e8d8;
+    --muted: #8a8278;
+    --card-bg: #ffffff;
+    --shadow: 0 4px 24px rgba(0,0,0,0.07);
+    --shadow-hover: 0 16px 48px rgba(0,0,0,0.14);
+    --radius: 16px;
+  }
+
+  body {
+    background-color: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  /* ── Flash Toast ── */
+  .flash-toast {
+    position: fixed;
+    top: 1.5rem;
+    right: 1.5rem;
+    z-index: 9999;
+    background: #1a1a1a;
+    color: #fff;
+    padding: 1rem 1.4rem;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    animation: slideIn 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards;
+    max-width: 340px;
+  }
+  .flash-toast i { color: #6ee7b7; font-size: 1.1rem; }
+  .flash-toast.hide { animation: slideOut 0.3s ease forwards; }
+  .toast-close {
+    background: none; border: none; color: #aaa;
+    font-size: 1.3rem; cursor: pointer; margin-left: auto; line-height: 1;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(120%); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes slideOut {
+    from { opacity: 1; transform: translateX(0); }
+    to   { opacity: 0; transform: translateX(120%); }
+  }
+
+  /* ── Hero Search ── */
+  .search-section {
+    margin: 2.2rem 0 1.8rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .search-section h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.9rem, 4vw, 2.9rem);
+    font-weight: 700;
+    color: var(--charcoal);
+    letter-spacing: -0.5px;
+    margin-bottom: 0.2rem;
+    text-align: center;
+    line-height: 1.15;
+  }
+  .search-section h1 span {
+    color: var(--warm);
+    font-style: italic;
+  }
+  .search-section .subtitle {
+    color: var(--muted);
+    font-size: 0.93rem;
+    margin-bottom: 1.1rem;
+    text-align: center;
+  }
+
+  .search-bar-wrapper {
+    width: 100%;
+    max-width: 600px;
+    position: relative;
+  }
+  .search-bar-wrapper input {
+    width: 100%;
+    padding: 1rem 3.2rem 1rem 1.5rem;
+    border: 2px solid transparent;
+    border-radius: 50px;
+    background: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    color: var(--charcoal);
+    box-shadow: var(--shadow);
+    outline: none;
+    transition: border-color 0.25s, box-shadow 0.25s;
+  }
+  .search-bar-wrapper input:focus {
+    border-color: var(--warm);
+    box-shadow: 0 0 0 4px rgba(200,169,110,0.15);
+  }
+  .search-bar-wrapper input::placeholder { color: #c0b8ae; }
+  .search-icon {
+    position: absolute;
+    right: 1.2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--warm);
+    font-size: 1rem;
+    pointer-events: none;
+  }
+  .search-clear {
+    position: absolute;
+    right: 3rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #bbb;
+    font-size: 1rem;
+    cursor: pointer;
+    display: none;
+    line-height: 1;
+  }
+  .search-clear:hover { color: #888; }
+  .search-results-count {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-top: 0.4rem;
+    min-height: 1.2em;
+    text-align: center;
+  }
+
+  /* ── Filters Row ── */
+  #filters {
+    margin: 0 0 1.8rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .filter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.55rem 1rem;
+    border-radius: 50px;
+    border: 1.5px solid #e8e0d5;
+    background: #fff;
+    opacity: 0.7;
+    cursor: pointer;
+    transition: all 0.22s ease;
+    white-space: nowrap;
+    gap: 0.18rem;
+    user-select: none;
+  }
+  .filter:hover {
+    opacity: 1;
+    border-color: var(--warm);
+    background: var(--warm-light);
+    transform: translateY(-2px);
+  }
+  .filter.active {
+    opacity: 1;
+    background: var(--charcoal);
+    border-color: var(--charcoal);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(26,26,26,0.18);
+    transform: translateY(-1px);
+  }
+  .filter i { font-size: 0.95rem; }
+  .filter p {
+    font-size: 0.72rem;
+    font-weight: 500;
+    margin: 0;
+  }
+
+  .tax-toggle {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    background: #fff;
+    padding: 0.5rem 1.1rem;
+    border-radius: 50px;
+    border: 1.5px solid #e8e0d5;
+    white-space: nowrap;
+    font-size: 0.82rem;
+    color: var(--muted);
+    font-weight: 500;
+    gap: 0.4rem;
+  }
+  .form-check-input:checked {
+    background-color: var(--charcoal) !important;
+    border-color: var(--charcoal) !important;
+  }
+
+  /* ── Listing Cards ── */
+  .listing-col {
+    animation: fadeUp 0.45s ease both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(22px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .listing-col:nth-child(1)  { animation-delay: 0.04s; }
+  .listing-col:nth-child(2)  { animation-delay: 0.09s; }
+  .listing-col:nth-child(3)  { animation-delay: 0.14s; }
+  .listing-col:nth-child(4)  { animation-delay: 0.19s; }
+  .listing-col:nth-child(5)  { animation-delay: 0.24s; }
+  .listing-col:nth-child(6)  { animation-delay: 0.29s; }
+  .listing-col:nth-child(n+7){ animation-delay: 0.34s; }
+
+  .listing-card {
+    border: none;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--card-bg);
+    box-shadow: var(--shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .listing-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-hover);
+  }
+  .listing-card:hover .card-img-top {
+    transform: scale(1.06);
+  }
+
+  .img-wrapper {
+    overflow: hidden;
+    position: relative;
+    height: 17rem;
+  }
+  .card-img-top {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+    display: block;
+  }
+
+  /* Wishlist */
+  .wishlist-btn {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: rgba(255,255,255,0.88);
+    backdrop-filter: blur(6px);
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #999;
+    font-size: 0.85rem;
+    z-index: 2;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .wishlist-btn:hover { color: #e74c3c; transform: scale(1.12); background: #fff; }
+  .wishlist-btn.liked  { color: #e74c3c; background: #fff; }
+
+  /* Rating */
+  .rating-badge {
+    position: absolute;
+    bottom: 0.75rem;
+    left: 0.75rem;
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(6px);
+    border-radius: 20px;
+    padding: 0.22rem 0.6rem;
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: var(--charcoal);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  .rating-badge i { color: #f59e0b; font-size: 0.68rem; }
+
+  /* Card body */
+  .card-body {
+    padding: 0.85rem 1rem 1rem;
+  }
+  .listing-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--charcoal);
+    margin-bottom: 0.15rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .listing-location {
+    font-size: 0.76rem;
+    color: var(--muted);
+    margin-bottom: 0.55rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .listing-location i { color: var(--warm); flex-shrink: 0; }
+  .listing-price {
+    font-size: 0.95rem;
+    color: var(--charcoal);
+    font-weight: 500;
+    display: flex;
+    align-items: baseline;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+  }
+  .listing-price strong { font-size: 1.05rem; font-weight: 700; }
+  .per-night { font-size: 0.78rem; color: var(--muted); font-weight: 400; }
+  .tax-info {
+    display: none;
+    font-size: 0.7rem;
+    color: var(--warm);
+    font-weight: 600;
+    background: var(--warm-light);
+    padding: 0.1rem 0.45rem;
+    border-radius: 4px;
+  }
+
+  /* ── No Results ── */
+  .no-results {
+    display: none;
+    text-align: center;
+    padding: 4rem 2rem;
+    width: 100%;
+  }
+  .no-results .no-icon {
+    font-size: 3rem;
+    color: #ddd;
+    margin-bottom: 1rem;
+    display: block;
+  }
+  .no-results p { color: var(--muted); font-size: 0.95rem; margin: 0.2rem 0; }
+  .no-results strong { color: var(--charcoal); }
+  .no-results .clear-link {
+    margin-top: 0.8rem;
+    display: inline-block;
+    font-size: 0.85rem;
+    color: var(--warm);
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
+  /* ── Sort Bar ── */
+  .sort-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .sort-bar .total-count {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .sort-bar .total-count strong { color: var(--charcoal); }
+  .sort-select {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    color: var(--charcoal);
+    border: 1.5px solid #e8e0d5;
+    border-radius: 50px;
+    padding: 0.35rem 0.9rem;
+    background: #fff;
+    outline: none;
+    cursor: pointer;
+  }
+  .sort-select:focus { border-color: var(--warm); }
+
+  @media (max-width: 576px) {
+    .tax-toggle { margin-left: 0; width: 100%; justify-content: center; }
+    #filters { justify-content: center; }
+    .search-section h1 { font-size: 1.7rem; }
+  }
+</style>
+
+<!-- Search Hero -->
+<div class="search-section">
+  <h1>Find your next <span>escape</span></h1>
+  <p class="subtitle">Handpicked stays across India — mountains, beaches, farms & more</p>
+  <div class="search-bar-wrapper">
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="Search by title or location..."
+      autocomplete="off"
+    />
+    <button class="search-clear" id="searchClear" title="Clear search">&times;</button>
+    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+  </div>
+  <div class="search-results-count" id="resultsCount"></div>
+</div>
+
+<!-- Filters -->
+<div id="filters">
+  <div class="filter active" data-filter="all">
+    <i class="fa-solid fa-border-all"></i>
+    <p>All</p>
+  </div>
+  <div class="filter" data-filter="trending">
+    <i class="fa-solid fa-fire"></i>
+    <p>Trending</p>
+  </div>
+  <div class="filter" data-filter="rooms">
+    <i class="fa-solid fa-bed"></i>
+    <p>Rooms</p>
+  </div>
+  <div class="filter" data-filter="iconic-cities">
+    <i class="fa-solid fa-mountain-city"></i>
+    <p>Iconic Cities</p>
+  </div>
+  <div class="filter" data-filter="mountains">
+    <i class="fa-solid fa-mountain"></i>
+    <p>Mountains</p>
+  </div>
+  <div class="filter" data-filter="castles">
+    <i class="fa-brands fa-fort-awesome"></i>
+    <p>Castles</p>
+  </div>
+  <div class="filter" data-filter="pools">
+    <i class="fa-solid fa-person-swimming"></i>
+    <p>Amazing Pools</p>
+  </div>
+  <div class="filter" data-filter="camping">
+    <i class="fa-solid fa-campground"></i>
+    <p>Camping</p>
+  </div>
+  <div class="filter" data-filter="farms">
+    <i class="fa-solid fa-cow"></i>
+    <p>Farms</p>
+  </div>
+  <div class="filter" data-filter="arctic">
+    <i class="fa-regular fa-snowflake"></i>
+    <p>Arctic</p>
+  </div>
+  <div class="filter" data-filter="farms">
+    <i class="fa-solid fa-cow"></i>
+    <p>Farms</p>
+  </div>
+  <div class="filter" data-filter="arctic">
+    <i class="fa-regular fa-snowflake"></i>
+    <p>Arctic</p>
+  </div>
+
+  <div class="tax-toggle">
+    <div class="form-check form-switch mb-0">
+      <input class="form-check-input" type="checkbox" role="switch" id="switchCheckDefault" />
+      <label class="form-check-label" for="switchCheckDefault">Show taxes</label>
+    </div>
+  </div>
+</div>
+
+<!-- Sort Bar -->
+<div class="sort-bar">
+  <span class="total-count" id="totalCount">
+    <strong id="visibleCount"><%= allListings.length %></strong> stays available
+  </span>
+  <select class="sort-select" id="sortSelect">
+    <option value="default">Sort: Featured</option>
+    <option value="price-asc">Price: Low to High</option>
+    <option value="price-desc">Price: High to Low</option>
+    <option value="name-asc">Name: A → Z</option>
+    <option value="name-desc">Name: Z → A</option>
+  </select>
+</div>
+
+<!-- Listings Grid -->
+<div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 g-4" id="listingsGrid">
+  <% for (let listing of allListings) { %>
+    <div
+      class="col listing-col"
+      data-title="<%= listing.title.toLowerCase() %>"
+      data-location="<%= (listing.location || '').toLowerCase() %>"
+      data-country="<%= (listing.country  || '').toLowerCase() %>"
+      data-price="<%= listing.price %>"
+    >
+      <a href="/listings/<%= listing._id %>" class="text-decoration-none">
+        <div class="card listing-card">
+
+          <div class="img-wrapper">
+            <img
+              src="<%= listing.image.url %>"
+              class="card-img-top"
+              alt="<%= listing.title %>"
+              loading="lazy"
+            />
+            <button class="wishlist-btn" onclick="toggleWishlist(event,this)" title="Save">
+              <i class="fa-regular fa-heart"></i>
+            </button>
+            <div class="rating-badge">
+              <i class="fa-solid fa-star"></i>
+              <span><%= (4.2 + Math.random() * 0.7).toFixed(1) %></span>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <div class="listing-title"><%= listing.title %></div>
+            <% if (listing.location || listing.country) { %>
+              <div class="listing-location">
+                <i class="fa-solid fa-location-dot"></i>
+                <%= [listing.location, listing.country].filter(Boolean).join(", ") %>
+              </div>
+            <% } %>
+            <div class="listing-price">
+              <strong>₹<%= listing.price.toLocaleString("en-IN") %></strong>
+              <span class="per-night">/ night</span>
+              <span class="tax-info">+18% GST</span>
+            </div>
+          </div>
+
+        </div>
+      </a>
+    </div>
+  <% } %>
+
+  <div class="no-results col-12" id="noResults">
+    <i class="fa-solid fa-magnifying-glass no-icon"></i>
+    <p>No listings found for <strong id="noResultsQuery"></strong></p>
+    <p style="font-size:0.83rem;">Try a different keyword or clear filters</p>
+    <span class="clear-link" onclick="clearSearch()">Clear search</span>
+  </div>
+</div>
+
+<script>
+  /* ── Toast auto-dismiss ── */
+  const toast = document.getElementById("flashToast");
+  if (toast) setTimeout(() => toast.classList.add("hide"), 4500);
+
+  /* ── Tax Toggle ── */
+  document.getElementById("switchCheckDefault").addEventListener("change", function () {
+    document.querySelectorAll(".tax-info").forEach(el => {
+      el.style.display = this.checked ? "inline" : "none";
+    });
+  });
+
+  /* ── Wishlist Toggle ── */
+  function toggleWishlist(e, btn) {
+    e.preventDefault();
+    e.stopPropagation();
+    btn.classList.toggle("liked");
+    btn.innerHTML = btn.classList.contains("liked")
+      ? '<i class="fa-solid fa-heart"></i>'
+      : '<i class="fa-regular fa-heart"></i>';
+  }
+
+  /* ── Search + Filter + Sort ── */
+  const allCols        = Array.from(document.querySelectorAll(".listing-col"));
+  const grid           = document.getElementById("listingsGrid");
+  const searchInput    = document.getElementById("searchInput");
+  const searchClear    = document.getElementById("searchClear");
+  const resultsCount   = document.getElementById("resultsCount");
+  const visibleCount   = document.getElementById("visibleCount");
+  const noResults      = document.getElementById("noResults");
+  const noResultsQuery = document.getElementById("noResultsQuery");
+  const sortSelect     = document.getElementById("sortSelect");
+  let activeFilter     = "all";
+
+  function applyAll() {
+    const query = searchInput.value.trim().toLowerCase();
+    searchClear.style.display = query ? "block" : "none";
+
+    let visible = 0;
+    allCols.forEach(col => {
+      const title    = col.dataset.title    || "";
+      const location = col.dataset.location || "";
+      const country  = col.dataset.country  || "";
+      const matchSearch = !query ||
+        title.includes(query) || location.includes(query) || country.includes(query);
+
+      col.style.display = matchSearch ? "" : "none";
+      if (matchSearch) visible++;
+    });
+
+    // Sort visible columns
+    const sortVal = sortSelect.value;
+    const visibleCols = allCols.filter(c => c.style.display !== "none");
+    visibleCols.sort((a, b) => {
+      if (sortVal === "price-asc")  return +a.dataset.price - +b.dataset.price;
+      if (sortVal === "price-desc") return +b.dataset.price - +a.dataset.price;
+      if (sortVal === "name-asc")   return a.dataset.title.localeCompare(b.dataset.title);
+      if (sortVal === "name-desc")  return b.dataset.title.localeCompare(a.dataset.title);
+      return 0;
+    });
+    visibleCols.forEach(col => grid.appendChild(col));
+
+    // Update counters
+    visibleCount.textContent = visible;
+    resultsCount.textContent = query
+      ? (visible > 0 ? `${visible} listing${visible !== 1 ? "s" : ""} found` : "")
+      : "";
+
+    // No results state
+    noResults.style.display = visible === 0 ? "block" : "none";
+    if (visible === 0) noResultsQuery.textContent = `"${query}"`;
+  }
+
+  function clearSearch() {
+    searchInput.value = "";
+    applyAll();
+    searchInput.focus();
+  }
+
+  let debounceTimer;
+  searchInput.addEventListener("input", () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(applyAll, 180);
+  });
+  searchClear.addEventListener("click", clearSearch);
+  sortSelect.addEventListener("change", applyAll);
+
+  document.querySelectorAll(".filter").forEach(filter => {
+    filter.addEventListener("click", () => {
+      document.querySelectorAll(".filter").forEach(f => f.classList.remove("active"));
+      filter.classList.add("active");
+      activeFilter = filter.dataset.filter;
+      applyAll();
+    });
+  });
+</script>

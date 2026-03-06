@@ -1,0 +1,43 @@
+<% 
+  var success = typeof success !== 'undefined' ? success : [];
+  var error = typeof error !== 'undefined' ? error : [];
+%>
+<% if(success && success.length) { %>
+  <% success.forEach(msg => { %>
+    <div class="alert alert-success alert-dismissible fade show mx-auto w-75 w-md-50" role="alert">
+      <%= msg %>
+      <button 
+        type="button" 
+        class="btn-close" 
+        data-bs-dismiss="alert" 
+        aria-label="Close"
+      ></button>
+    </div>
+  <% }) %>
+<% } %>
+
+<% if(error && error.length) { %>
+  <% error.forEach(msg => { %>
+    <div class="alert alert-danger alert-dismissible fade show mx-auto w-75 w-md-50" role="alert">
+      <%= msg %>
+      <button 
+        type="button" 
+        class="btn-close" 
+        data-bs-dismiss="alert" 
+        aria-label="Close"
+      ></button>
+    </div>
+  <% }) %>
+<% } %>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(alert => {
+      setTimeout(() => {
+        const bsAlert = new bootstrap.Alert(alert);
+        bsAlert.close();
+      }, 4000);
+    });
+  });
+</script>

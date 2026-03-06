@@ -1,0 +1,962 @@
+<!-- <% layout("/layouts/boilerplate") %>
+
+<div class="row mt-3">
+  <div class="col-8 offset-2">
+    <h3>Create a New Listing</h3>
+    <form method="POST" 
+      action="/listings" 
+      novalidate 
+      class="needs-validation" 
+      enctype="multipart/form-data"
+      id="listing-form">
+
+      <div class="mb-3">
+        <label for="title" class="form-label">Title</label>
+        <input name="listing[title]" placeholder="Add a title" type="text" class="form-control" required />
+        <div class="valid-feedback">Title looks good!</div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Description</label>
+        <textarea name="listing[description]" class="form-control" required></textarea>
+        <div class="invalid-feedback">Please enter the short description</div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Upload Listing Image</label>
+        <input name="listing[image]" type="file" class="form-control" />
+      </div>
+
+      <div class="row">
+        <div class="mb-3 col-md-4">
+          <label class="form-label">Price</label>
+          <input name="listing[price]" placeholder="1200" class="form-control" required />
+          <div class="invalid-feedback">Please enter the valid price</div>
+        </div>
+
+        <div class="mb-3 col-md-8">
+          <label for="country" class="form-label">Country</label>
+          <input name="listing[country]" id="country" placeholder="India" type="text" class="form-control" required />
+          <div class="invalid-feedback">Please enter the country name</div>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Location</label>
+        <input name="listing[location]" id="location" placeholder="Bareilly, UP" type="text" class="form-control" required />
+        <div class="invalid-feedback">Please enter the location</div>
+      </div>
+      
+      <button class="btn btn-dark add-btn mt-3">Add</button>
+    </form>
+  </div>
+</div> -->
+
+
+<% layout("/layouts/boilerplate") %>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Italiana&family=Outfit:wght@300;400;500;600&display=swap');
+
+  /* ══════════════════════════════════════
+     ROOT & RESET
+  ══════════════════════════════════════ */
+  :root {
+    --bg:         #0d0d0f;
+    --surface:    #141417;
+    --surface2:   #1c1c21;
+    --border:     rgba(255,255,255,0.07);
+    --border-act: rgba(255,255,255,0.22);
+    --text:       #f0ece4;
+    --text-muted: #6b6860;
+    --text-sub:   #a09a90;
+    --amber:      #e8a838;
+    --amber-dim:  rgba(232,168,56,0.12);
+    --amber-glow: rgba(232,168,56,0.25);
+    --green:      #4ade80;
+    --red:        #f87171;
+    --radius-sm:  6px;
+    --radius-md:  12px;
+    --radius-lg:  20px;
+    --transition: 0.28s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    font-family: 'Outfit', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ══════════════════════════════════════
+     AMBIENT BACKGROUND ORBS
+  ══════════════════════════════════════ */
+  .orb-scene {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.18;
+    animation: drift 18s ease-in-out infinite alternate;
+  }
+  .orb-1 {
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, #e8a838, transparent 70%);
+    top: -120px; right: -100px;
+    animation-duration: 20s;
+  }
+  .orb-2 {
+    width: 380px; height: 380px;
+    background: radial-gradient(circle, #6366f1, transparent 70%);
+    bottom: 5%; left: -80px;
+    animation-duration: 25s;
+    animation-delay: -8s;
+  }
+  .orb-3 {
+    width: 260px; height: 260px;
+    background: radial-gradient(circle, #e8a838, transparent 70%);
+    top: 50%; left: 30%;
+    opacity: 0.08;
+    animation-duration: 30s;
+    animation-delay: -14s;
+  }
+  @keyframes drift {
+    from { transform: translate(0, 0) scale(1); }
+    to   { transform: translate(40px, 30px) scale(1.08); }
+  }
+
+  /* ══════════════════════════════════════
+     PAGE LAYOUT — SPLIT
+  ══════════════════════════════════════ */
+  .listing-page {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr 1.1fr;
+    min-height: calc(100vh - 80px);
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 4rem;
+    gap: 4rem;
+    align-items: start;
+  }
+
+  /* ── LEFT PANEL ── */
+  .left-panel {
+    position: sticky;
+    top: 2rem;
+    padding-top: 1rem;
+    animation: panelIn 0.7s cubic-bezier(0.22,1,0.36,1) both;
+  }
+  @keyframes panelIn {
+    from { opacity: 0; transform: translateX(-30px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  .left-panel .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--amber);
+    background: var(--amber-dim);
+    border: 1px solid rgba(232,168,56,0.2);
+    border-radius: 100px;
+    padding: 0.35rem 0.85rem;
+    margin-bottom: 1.8rem;
+  }
+  .left-panel .tag i { font-size: 0.6rem; }
+
+  .left-panel h1 {
+    font-family: 'Italiana', serif;
+    font-size: clamp(2.8rem, 5vw, 4.2rem);
+    font-weight: 400;
+    line-height: 1.05;
+    color: var(--text);
+    letter-spacing: -0.5px;
+    margin-bottom: 1.5rem;
+  }
+  .left-panel h1 .accent {
+    display: block;
+    background: linear-gradient(135deg, var(--amber) 0%, #f5c842 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .left-panel .desc {
+    font-size: 0.88rem;
+    color: var(--text-sub);
+    line-height: 1.8;
+    max-width: 320px;
+    margin-bottom: 2.5rem;
+    font-weight: 300;
+  }
+
+  /* Steps checklist */
+  .steps { display: flex; flex-direction: column; gap: 1.1rem; }
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    opacity: 0.45;
+    transition: opacity 0.3s;
+  }
+  .step.done { opacity: 1; }
+  .step-dot {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    transition: all 0.3s;
+    background: var(--surface);
+  }
+  .step.done .step-dot {
+    background: var(--amber-dim);
+    border-color: var(--amber);
+    color: var(--amber);
+  }
+  .step-text {
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: var(--text-sub);
+    letter-spacing: 0.02em;
+  }
+  .step.done .step-text { color: var(--text); font-weight: 500; }
+
+  /* Decorative line */
+  .deco-line {
+    width: 48px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--amber), transparent);
+    margin: 2rem 0;
+    border-radius: 2px;
+  }
+
+  /* ── RIGHT PANEL (FORM CARD) ── */
+  .form-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.03) inset,
+      0 32px 80px rgba(0,0,0,0.4),
+      0 0 60px rgba(232,168,56,0.04);
+    animation: cardIn 0.7s cubic-bezier(0.22,1,0.36,1) 0.1s both;
+  }
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Card top stripe */
+  .card-stripe {
+    height: 3px;
+    background: linear-gradient(90deg, var(--amber) 0%, #f5c842 50%, transparent 100%);
+  }
+
+  .form-body { padding: 2.4rem 2.6rem; }
+
+  /* ── SECTION HEADERS ── */
+  .form-section {
+    margin-bottom: 2rem;
+  }
+  .section-head {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 1.5rem;
+  }
+  .section-num {
+    width: 24px; height: 24px;
+    background: var(--amber-dim);
+    border: 1px solid rgba(232,168,56,0.3);
+    border-radius: 50%;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--amber);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .section-title {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-sub);
+  }
+  .section-rule {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ══════════════════════════════════════
+     FLOATING LABEL INPUTS
+  ══════════════════════════════════════ */
+  .float-field {
+    position: relative;
+    margin-bottom: 1.3rem;
+  }
+
+  .float-field input,
+  .float-field textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 1.35rem 1rem 0.5rem;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 400;
+    color: var(--text);
+    outline: none;
+    transition:
+      border-color var(--transition),
+      box-shadow var(--transition),
+      background var(--transition);
+    caret-color: var(--amber);
+    appearance: none;
+  }
+  .float-field textarea {
+    resize: none;
+    height: 120px;
+    line-height: 1.6;
+    padding-top: 1.5rem;
+  }
+  .float-field input::placeholder,
+  .float-field textarea::placeholder {
+    color: transparent;
+  }
+
+  .float-field label {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: var(--text-muted);
+    pointer-events: none;
+    transition:
+      top var(--transition),
+      transform var(--transition),
+      font-size var(--transition),
+      color var(--transition),
+      letter-spacing var(--transition);
+    white-space: nowrap;
+  }
+  .float-field textarea + label,
+  .float-field textarea ~ label {
+    top: 1.1rem;
+    transform: none;
+  }
+
+  /* Floated state */
+  .float-field input:focus + label,
+  .float-field input:not(:placeholder-shown) + label,
+  .float-field textarea:focus ~ label,
+  .float-field textarea:not(:placeholder-shown) ~ label {
+    top: 0.45rem;
+    transform: none;
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+  }
+  .float-field textarea:focus ~ label,
+  .float-field textarea:not(:placeholder-shown) ~ label {
+    top: 0.45rem;
+  }
+
+  /* Focus ring */
+  .float-field input:focus,
+  .float-field textarea:focus {
+    border-color: rgba(232,168,56,0.5);
+    background: #1f1f24;
+    box-shadow: 0 0 0 3px var(--amber-dim), 0 1px 12px rgba(0,0,0,0.3);
+  }
+
+  /* Valid / Invalid */
+  .float-field input.valid,
+  .float-field textarea.valid {
+    border-color: rgba(74,222,128,0.4);
+  }
+  .float-field input.valid + label,
+  .float-field textarea.valid ~ label {
+    color: var(--green) !important;
+  }
+  .float-field input.invalid,
+  .float-field textarea.invalid {
+    border-color: rgba(248,113,113,0.45);
+    background: rgba(248,113,113,0.04);
+  }
+  .float-field input.invalid + label,
+  .float-field textarea.invalid ~ label {
+    color: var(--red) !important;
+  }
+
+  /* Suffix icon inside input */
+  .float-field .field-icon {
+    position: absolute;
+    right: 0.9rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    pointer-events: none;
+    transition: color 0.2s;
+  }
+  .float-field input.valid ~ .field-icon { color: var(--green); }
+  .float-field input.invalid ~ .field-icon { color: var(--red); }
+
+  /* Feedback text */
+  .feedback {
+    font-size: 0.68rem;
+    font-weight: 400;
+    padding: 0 0.2rem;
+    margin-top: 0.28rem;
+    min-height: 1em;
+    display: block;
+    transition: color 0.2s;
+  }
+  .feedback.ok  { color: var(--green); }
+  .feedback.err { color: var(--red); }
+
+  /* Price with prefix */
+  .price-wrap {
+    position: relative;
+  }
+  .price-wrap .rupee {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    pointer-events: none;
+    z-index: 2;
+    transition: color 0.2s;
+    margin-top: 0.45rem;
+  }
+  .price-wrap input { padding-left: 1.8rem; }
+  .price-wrap input:focus ~ .rupee { color: var(--amber); }
+
+  /* Two col grid */
+  .field-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 1rem;
+  }
+
+  /* ── FILE UPLOAD ── */
+  .upload-zone {
+    border: 1.5px dashed rgba(255,255,255,0.1);
+    border-radius: var(--radius-md);
+    padding: 2rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    position: relative;
+    background: var(--surface2);
+    transition: border-color var(--transition), background var(--transition), box-shadow var(--transition);
+    overflow: hidden;
+  }
+  .upload-zone::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(232,168,56,0.06), transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .upload-zone:hover,
+  .upload-zone.dragover {
+    border-color: rgba(232,168,56,0.4);
+    background: rgba(232,168,56,0.04);
+    box-shadow: 0 0 24px rgba(232,168,56,0.08);
+  }
+  .upload-zone:hover::before,
+  .upload-zone.dragover::before { opacity: 1; }
+
+  .upload-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .upload-icon-wrap {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    background: var(--amber-dim);
+    border: 1px solid rgba(232,168,56,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 1.1rem;
+    color: var(--amber);
+    transition: transform 0.2s;
+  }
+  .upload-zone:hover .upload-icon-wrap { transform: scale(1.08) translateY(-2px); }
+  .upload-main { font-size: 0.85rem; font-weight: 500; color: var(--text); margin-bottom: 0.3rem; }
+  .upload-sub  { font-size: 0.73rem; color: var(--text-muted); font-weight: 300; }
+
+  /* Preview */
+  .preview-wrap {
+    display: none;
+    margin-top: 0.9rem;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    position: relative;
+    border: 1px solid var(--border);
+  }
+  .preview-wrap img {
+    width: 100%; height: 160px;
+    object-fit: cover;
+    display: block;
+  }
+  .preview-wrap .preview-badge {
+    position: absolute;
+    bottom: 0.5rem; left: 0.5rem;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(6px);
+    border-radius: 100px;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.68rem;
+    color: var(--green);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  /* Char counter */
+  .char-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.3rem;
+  }
+  .char-count {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    transition: color 0.2s;
+  }
+  .char-count.warn { color: var(--amber); }
+  .char-count.over { color: var(--red); }
+
+  /* ── FORM FOOTER ── */
+  .form-footer {
+    padding: 1.4rem 2.6rem 2.4rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    background: rgba(0,0,0,0.15);
+  }
+
+  .btn-publish {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #0d0d0f;
+    background: linear-gradient(135deg, var(--amber) 0%, #f5c842 100%);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 0.9rem 2.2rem;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.18s, box-shadow 0.18s, filter 0.18s;
+    box-shadow: 0 4px 20px var(--amber-glow);
+  }
+  .btn-publish::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+    transition: left 0.5s ease;
+  }
+  .btn-publish:hover { transform: translateY(-2px); box-shadow: 0 8px 32px var(--amber-glow); filter: brightness(1.07); }
+  .btn-publish:hover::before { left: 100%; }
+  .btn-publish:active { transform: translateY(0); }
+
+  .btn-cancel {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 400;
+    color: var(--text-muted);
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.9rem 1.5rem;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+    letter-spacing: 0.03em;
+  }
+  .btn-cancel:hover { color: var(--text); border-color: var(--border-act); }
+
+  .footer-note {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    width: 100%;
+  }
+  .footer-note i { color: var(--amber); font-size: 0.6rem; }
+
+  /* ══════════════════════════════════════
+     RESPONSIVE
+  ══════════════════════════════════════ */
+  @media (max-width: 900px) {
+    .listing-page {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      padding: 2rem 1rem 3rem;
+    }
+    .left-panel {
+      position: static;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+    }
+    .left-panel h1 { font-size: 2.4rem; flex: 1 1 100%; }
+    .left-panel .desc { margin-bottom: 0; }
+    .steps { display: none; }
+    .deco-line { display: none; }
+  }
+  @media (max-width: 540px) {
+    .form-body { padding: 1.6rem 1.4rem; }
+    .form-footer { padding: 1.2rem 1.4rem 2rem; }
+    .field-grid { grid-template-columns: 1fr; }
+    .btn-publish { width: 100%; text-align: center; }
+    .btn-cancel  { width: 100%; text-align: center; }
+  }
+</style>
+
+<!-- Ambient orbs -->
+<div class="orb-scene" aria-hidden="true">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<div class="listing-page">
+
+  <!-- ══ LEFT PANEL ══ -->
+  <aside class="left-panel">
+    <span class="tag"><i class="fa-solid fa-plus"></i> New Listing</span>
+    <h1>
+      Share your
+      <span class="accent">hideaway.</span>
+    </h1>
+    <p class="desc">
+      Every great stay starts here. Fill in the details and let
+      travellers discover the place you call special.
+    </p>
+
+    <div class="deco-line"></div>
+
+    <div class="steps" id="stepsList">
+      <div class="step done" id="step-basics">
+        <div class="step-dot"><i class="fa-solid fa-pen-nib"></i></div>
+        <span class="step-text">Basic information</span>
+      </div>
+      <div class="step" id="step-photo">
+        <div class="step-dot"><i class="fa-solid fa-image"></i></div>
+        <span class="step-text">Upload a photo</span>
+      </div>
+      <div class="step" id="step-pricing">
+        <div class="step-dot"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+        <span class="step-text">Set your price</span>
+      </div>
+      <div class="step" id="step-location">
+        <div class="step-dot"><i class="fa-solid fa-location-dot"></i></div>
+        <span class="step-text">Location details</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ══ FORM CARD ══ -->
+  <div class="form-card">
+    <div class="card-stripe"></div>
+
+    <form
+      method="POST"
+      action="/listings"
+      novalidate
+      enctype="multipart/form-data"
+      id="listing-form"
+    >
+      <div class="form-body">
+
+        <!-- §1 — BASICS -->
+        <div class="form-section">
+          <div class="section-head">
+            <div class="section-num">1</div>
+            <span class="section-title">Basics</span>
+            <div class="section-rule"></div>
+          </div>
+
+          <div class="float-field">
+            <input
+              type="text"
+              id="title"
+              name="listing[title]"
+              placeholder=" "
+              autocomplete="off"
+              required
+            />
+            <label for="title">Listing Title</label>
+            <i class="fa-solid fa-check field-icon" id="title-icon" style="display:none"></i>
+            <span class="feedback" id="title-fb"></span>
+          </div>
+
+          <div class="float-field">
+            <textarea
+              id="description"
+              name="listing[description]"
+              placeholder=" "
+              maxlength="500"
+              required
+            ></textarea>
+            <label for="description">Description</label>
+            <span class="feedback" id="desc-fb"></span>
+          </div>
+          <div class="char-row">
+            <span class="char-count" id="char-count">0 / 500</span>
+          </div>
+        </div>
+
+        <!-- §2 — PHOTO -->
+        <div class="form-section">
+          <div class="section-head">
+            <div class="section-num">2</div>
+            <span class="section-title">Photo</span>
+            <div class="section-rule"></div>
+          </div>
+
+          <div class="upload-zone" id="uploadZone">
+            <input type="file" name="listing[image]" id="imgInput" accept="image/*" />
+            <div class="upload-icon-wrap">
+              <i class="fa-solid fa-arrow-up-from-bracket"></i>
+            </div>
+            <p class="upload-main">Drop your image here, or <span style="color:var(--amber)">browse</span></p>
+            <p class="upload-sub">JPG · PNG · WEBP &nbsp;·&nbsp; Max 5 MB</p>
+          </div>
+          <div class="preview-wrap" id="previewWrap">
+            <img id="previewImg" src="" alt="Preview" />
+            <div class="preview-badge">
+              <i class="fa-solid fa-circle-check"></i> Image ready
+            </div>
+          </div>
+        </div>
+
+        <!-- §3 — PRICING & LOCATION -->
+        <div class="form-section" style="margin-bottom:0">
+          <div class="section-head">
+            <div class="section-num">3</div>
+            <span class="section-title">Pricing & Location</span>
+            <div class="section-rule"></div>
+          </div>
+
+          <div class="field-grid">
+            <div class="float-field">
+              <div class="price-wrap">
+                <input
+                  type="number"
+                  id="price"
+                  name="listing[price]"
+                  placeholder=" "
+                  min="1"
+                  required
+                />
+                <label for="price">Price per night</label>
+                <span class="rupee">₹</span>
+              </div>
+              <span class="feedback" id="price-fb"></span>
+            </div>
+
+            <div class="float-field">
+              <input
+                type="text"
+                id="country"
+                name="listing[country]"
+                placeholder=" "
+                autocomplete="country-name"
+                required
+              />
+              <label for="country">Country</label>
+              <span class="feedback" id="country-fb"></span>
+            </div>
+          </div>
+
+          <div class="float-field">
+            <input
+              type="text"
+              id="location"
+              name="listing[location]"
+              placeholder=" "
+              autocomplete="off"
+              required
+            />
+            <label for="location">City / Area</label>
+            <span class="feedback" id="location-fb"></span>
+          </div>
+        </div>
+
+      </div><!-- /form-body -->
+
+      <!-- Footer -->
+      <div class="form-footer">
+        <button type="submit" class="btn-publish">
+          Publish listing &nbsp;→
+        </button>
+        <button type="button" class="btn-cancel" onclick="history.back()">
+          Cancel
+        </button>
+        <p class="footer-note">
+          <i class="fa-solid fa-shield-halved"></i>
+          Your listing will be reviewed before going live.
+        </p>
+      </div>
+    </form>
+  </div>
+
+</div><!-- /listing-page -->
+
+<script>
+(function () {
+
+  /* ── Char counter ── */
+  const descEl    = document.getElementById("description");
+  const charCount = document.getElementById("char-count");
+  descEl.addEventListener("input", () => {
+    const n = descEl.value.length;
+    charCount.textContent = `${n} / 500`;
+    charCount.className = "char-count" + (n > 440 ? (n >= 500 ? " over" : " warn") : "");
+    validateField(descEl, document.getElementById("desc-fb"), "Description can't be empty.");
+    tickStep("step-basics", isBasicsDone());
+  });
+
+  /* ── File upload & preview ── */
+  const zone        = document.getElementById("uploadZone");
+  const imgInput    = document.getElementById("imgInput");
+  const previewWrap = document.getElementById("previewWrap");
+  const previewImg  = document.getElementById("previewImg");
+
+  zone.addEventListener("dragover",  e => { e.preventDefault(); zone.classList.add("dragover"); });
+  zone.addEventListener("dragleave", () => zone.classList.remove("dragover"));
+  zone.addEventListener("drop", e => {
+    e.preventDefault();
+    zone.classList.remove("dragover");
+    if (e.dataTransfer.files[0]) { imgInput.files = e.dataTransfer.files; showPreview(); }
+  });
+  imgInput.addEventListener("change", showPreview);
+
+  function showPreview() {
+    const file = imgInput.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      previewImg.src = ev.target.result;
+      previewWrap.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+    tickStep("step-photo", true);
+  }
+
+  /* ── Validation helpers ── */
+  function validateField(el, fb, errMsg, okMsg) {
+    const ok = el.value.trim() !== "" && el.checkValidity();
+    el.classList.toggle("valid",   ok);
+    el.classList.toggle("invalid", !ok && el.value.trim() !== "");
+    if (fb) {
+      fb.textContent = ok ? (okMsg || "") : (el.value.trim() !== "" ? errMsg : "");
+      fb.className   = "feedback " + (ok ? "ok" : (el.value.trim() !== "" ? "err" : ""));
+    }
+    return ok;
+  }
+
+  /* ── Per-field live validation ── */
+  const fields = [
+    { id:"title",    fb:"title-fb",    err:"Title is required."      },
+    { id:"price",    fb:"price-fb",    err:"Enter a valid price."    },
+    { id:"country",  fb:"country-fb",  err:"Country is required."    },
+    { id:"location", fb:"location-fb", err:"Location is required."   },
+  ];
+
+  fields.forEach(({ id, fb, err }) => {
+    const el   = document.getElementById(id);
+    const fbEl = document.getElementById(fb);
+    el.addEventListener("blur",  () => { validateField(el, fbEl, err); updateSteps(); });
+    el.addEventListener("input", () => { if (el.classList.contains("invalid")) validateField(el, fbEl, err); updateSteps(); });
+  });
+
+  /* Title check icon */
+  const titleEl = document.getElementById("title");
+  titleEl.addEventListener("input", () => {
+    const icon = document.getElementById("title-icon");
+    if (icon) icon.style.display = titleEl.value.trim() ? "block" : "none";
+  });
+
+  /* ── Step tracker ── */
+  function isBasicsDone()   { return titleEl.value.trim() !== "" && descEl.value.trim() !== ""; }
+  function isPricingDone()  { return document.getElementById("price").value.trim() !== "" && document.getElementById("country").value.trim() !== ""; }
+  function isLocationDone() { return document.getElementById("location").value.trim() !== ""; }
+  function tickStep(id, done) { document.getElementById(id)?.classList.toggle("done", done); }
+  function updateSteps() {
+    tickStep("step-basics",   isBasicsDone());
+    tickStep("step-pricing",  isPricingDone());
+    tickStep("step-location", isLocationDone());
+  }
+
+  /* ── Submit ── */
+  document.getElementById("listing-form").addEventListener("submit", function (e) {
+    let valid = true;
+    fields.forEach(({ id, fb, err }) => {
+      const el  = document.getElementById(id);
+      const fbEl= document.getElementById(fb);
+      if (!validateField(el, fbEl, err)) valid = false;
+    });
+    if (!descEl.value.trim()) {
+      validateField(descEl, document.getElementById("desc-fb"), "Description can't be empty.");
+      valid = false;
+    }
+    if (!valid) {
+      e.preventDefault();
+      const first = this.querySelector(".invalid");
+      if (first) first.scrollIntoView({ behavior:"smooth", block:"center" });
+    }
+  });
+
+})();
+</script>
