@@ -396,7 +396,7 @@ Distributed under the **MIT License**. See `LICENSE` for more information.
 
 <div align="center">
 
-**Made with ❤️ &nbsp;by [Vikas](https://github.com/officialvikas455)**
+**Made with ❤️ &nbsp;by [Vikas Gangwar](https://github.com/officialvikas455)**
 
 <br/>
 
