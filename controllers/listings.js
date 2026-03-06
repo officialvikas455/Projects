@@ -44,12 +44,19 @@ module.exports.createListing = async (req, res, next) => {
             limit: 1,
         }).send();
 
+        // ✅ Null check — prevents crash if MAP_TOKEN is missing or location not found
+        const features = response.body.features;
+        if (!features || features.length === 0) {
+            req.flash("error", "Could not find location. Please check location/country and try again.");
+            return res.redirect("/listings/new");
+        }
+
         let url = req.file.path;
         let filename = req.file.filename;
         const newListing = new Listing(req.body.listing);
         newListing.owner = req.user._id;
         newListing.image = { url, filename };
-        newListing.geometry = response.body.features[0].geometry;
+        newListing.geometry = features[0].geometry;
 
         let savedListing = await newListing.save();
         console.log("Saved geometry:", savedListing.geometry);
@@ -91,7 +98,14 @@ module.exports.updateListing = async (req, res) => {
             limit: 1,
         }).send();
 
-        listing.geometry = response.body.features[0].geometry;
+        // ✅ Null check — prevents crash if MAP_TOKEN is missing or location not found
+        const features = response.body.features;
+        if (!features || features.length === 0) {
+            req.flash("error", "Could not find location. Please check location/country and try again.");
+            return res.redirect(`/listings/${id}/edit`);
+        }
+
+        listing.geometry = features[0].geometry;
         console.log("Updated geometry:", listing.geometry);
 
         await listing.save();
