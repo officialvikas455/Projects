@@ -4,6 +4,10 @@ if(process.env.NODE_ENV != "production"){
 
 const express = require("express");
 const app = express();
+process.on('uncaughtException', (err) => {
+  console.log("UNCAUGHT EXCEPTION:", err.message);
+  console.log(err.stack);
+});
 const mongoose = require("mongoose");
 const path = require("path");
 const methodOverride = require("method-override");
@@ -42,9 +46,6 @@ app.use(express.static(path.join(__dirname,"/public")));
 
 const store = MongoStore.create({
   mongoUrl: dbUrl,
-  crypto:{
-    secret : process.env.SECRET || "fallbacksecret",
-  },
   touchAfter: 24 * 60 * 60,
 });
 
@@ -63,16 +64,12 @@ const sessionOptions = {
     httpOnly: true
   },
 };
-
 app.use(session(sessionOptions));
 app.use(flash());
 
 // app.get("/", (req, res) => {
 //   res.send("Hi, I am root");
 //   });
-
-
-
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -108,10 +105,31 @@ app.use((req, res, next) => {
   next(new ExpressError(404, "Page Not Found!"));
 });
 
-  app.use((err,req, res, next) => {
-  const {statusCode=500, message="Something went wrong!"} = err;
-  return res.status(statusCode).render("listings/error.ejs", {err});
-  // res.status(statusCode).send(message);
+app.use((err, req, res, next) => {
+  const statusCode = err.statusCode || 500;
+  const message = err.message || "Something went wrong!";
+  
+  // Replace err with a safe object so template never crashes
+  return res.status(statusCode).render("listings/error.ejs", { 
+    err: { statusCode, message } 
+  });
+});
+
+app.use((err, req, res, next) => {
+  console.log("=== ERROR HANDLER ===");
+  console.log("URL:", req.originalUrl);
+  console.log("Headers sent?", res.headersSent);
+  console.log("Error:", err.message);
+  
+  if (res.headersSent) {
+    return next(err); // ← add this safety check
+  }
+  
+  const statusCode = err.statusCode || 500;
+  const message = err.message || "Something went wrong!";
+  return res.status(statusCode).render("listings/error.ejs", { 
+    err: { statusCode, message } 
+  });
 });
 
 app.listen(8080, () => {
