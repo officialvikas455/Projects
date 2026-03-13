@@ -213,7 +213,7 @@ node app.js
 ✓  Server is listening on port 8080
 ```
 
-Visit → **[http://localhost:8080/listings](http://localhost:8080/listings)**
+Visit → **[https://wanderlust-3dy3.onrender.com)**
 
 <br/>
 
